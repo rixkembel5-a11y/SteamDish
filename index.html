@@ -1,9 +1,10 @@
 <!DOCTYPE html>
+
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>Пароварка</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Пароварка PRO</title>
 
 <link rel="manifest" href="manifest.json">
 
@@ -19,121 +20,97 @@ body {
   font-size:20px;
   color:#38bdf8;
 }
-.tabs {
-  display:flex;
-  gap:8px;
-  padding:10px;
-  overflow:auto;
-}
-.tab {
-  padding:10px 12px;
-  border-radius:999px;
-  border:1px solid #1f2937;
-  background:#020617;
-  color:#fff;
-  white-space:nowrap;
-}
-.tab.active { background:#1e293b; border-color:#38bdf8; }
-
 .card {
   margin:10px;
-  padding:12px;
+  padding:14px;
   background:#0f172a;
-  border:1px solid #1f2937;
-  border-radius:14px;
+  border-radius:12px;
 }
-h2 { color:#22c55e; font-size:18px; }
+button {
+  padding:10px 14px;
+  margin:5px;
+  border:none;
+  border-radius:8px;
+  font-size:16px;
+}
+.start { background:#22c55e; color:#000; }
+.next { background:#38bdf8; }
 .timer {
-  background:rgba(34,197,94,0.1);
-  padding:10px;
-  border-radius:10px;
+  font-size:32px;
   text-align:center;
-  margin:6px 0;
+  margin:15px 0;
 }
-.recipe { display:none; }
-.recipe.active { display:block; }
 </style>
+
 </head>
 
 <body>
 
-<div class="header">🍲 Пароварка — PWA режим</div>
+<div class="header">🍲 Пароварка PRO</div>
 
-<div class="tabs">
-  <button class="tab active" onclick="show('r1',this)">Рис + всё</button>
-  <button class="tab" onclick="show('r2',this)">Гречка + всё</button>
-  <button class="tab" onclick="show('r3',this)">Рис + рыба</button>
+<div class="card">
+  <h2>Текущий шаг</h2>
+  <div id="stepText">Нажми «Старт»</div>
 </div>
 
-<!-- R1 -->
-<div id="r1" class="recipe active">
-  <div class="card">
-    <h2>Низ</h2>
-    <div>Рис + картошка</div>
-  </div>
+<div class="timer" id="timer">00:00</div>
 
-  <div class="card">
-    <h2>Верх</h2>
-    <div>Курица + рыба + котлеты</div>
-  </div>
-
-  <div class="card">
-    <div class="timer">20 мин — низ</div>
-    <div class="timer">+20 мин — верх</div>
-    <b>40 минут</b>
-  </div>
-</div>
-
-<!-- R2 -->
-<div id="r2" class="recipe">
-  <div class="card">
-    <h2>Низ</h2>
-    <div>Гречка + картошка</div>
-  </div>
-
-  <div class="card">
-    <h2>Верх</h2>
-    <div>Курица + рыба + котлеты</div>
-  </div>
-
-  <div class="card">
-    <div class="timer">15–20 мин</div>
-    <div class="timer">+20 мин</div>
-    <b>35–40 минут</b>
-  </div>
-</div>
-
-<!-- R3 -->
-<div id="r3" class="recipe">
-  <div class="card">
-    <h2>Низ</h2>
-    <div>Рис + картошка</div>
-  </div>
-
-  <div class="card">
-    <h2>Верх</h2>
-    <div>Рыба + котлеты</div>
-  </div>
-
-  <div class="card">
-    <div class="timer">20 мин</div>
-    <div class="timer">+15–20 мин</div>
-    <b>35–40 минут</b>
-  </div>
+<div style="text-align:center;">
+  <button class="start" onclick="start()">Старт</button>
+  <button class="next" onclick="nextStep()">Следующий шаг</button>
 </div>
 
 <script>
-function show(id,el){
-  document.querySelectorAll('.recipe').forEach(r=>r.classList.remove('active'));
-  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  el.classList.add('active');
+
+const steps = [
+  { text: "Запусти НИЗ: рис + картошка", time: 20*60 },
+  { text: "Добавь ВЕРХ: курица, рыба, котлеты", time: 20*60 },
+  { text: "Готово 🎉", time: 0 }
+];
+
+let current = 0;
+let interval = null;
+
+function start(){
+  current = 0;
+  runStep();
 }
 
-// service worker
+function nextStep(){
+  current++;
+  runStep();
+}
+
+function runStep(){
+  clearInterval(interval);
+
+  if(current >= steps.length) return;
+
+  const step = steps[current];
+  document.getElementById("stepText").innerText = step.text;
+
+  let t = step.time;
+
+  interval = setInterval(()=>{
+    let m = Math.floor(t/60);
+    let s = t%60;
+
+    document.getElementById("timer").innerText =
+      String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+
+    if(t <= 0){
+      clearInterval(interval);
+      alert("Шаг завершён");
+    }
+    t--;
+  },1000);
+}
+
+// регистрация service worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
 }
+
 </script>
 
 </body>
