@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Пароварка</title>
+
+<link rel="manifest" href="manifest.json">
+
+<style>
+body {
+  margin:0;
+  font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Arial;
+  background:#0b1220;
+  color:#e5e7eb;
+}
+.header {
+  padding:16px;
+  font-size:20px;
+  color:#38bdf8;
+}
+.tabs {
+  display:flex;
+  gap:8px;
+  padding:10px;
+  overflow:auto;
+}
+.tab {
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid #1f2937;
+  background:#020617;
+  color:#fff;
+  white-space:nowrap;
+}
+.tab.active { background:#1e293b; border-color:#38bdf8; }
+
+.card {
+  margin:10px;
+  padding:12px;
+  background:#0f172a;
+  border:1px solid #1f2937;
+  border-radius:14px;
+}
+h2 { color:#22c55e; font-size:18px; }
+.timer {
+  background:rgba(34,197,94,0.1);
+  padding:10px;
+  border-radius:10px;
+  text-align:center;
+  margin:6px 0;
+}
+.recipe { display:none; }
+.recipe.active { display:block; }
+</style>
+</head>
+
+<body>
+
+<div class="header">🍲 Пароварка — PWA режим</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="show('r1',this)">Рис + всё</button>
+  <button class="tab" onclick="show('r2',this)">Гречка + всё</button>
+  <button class="tab" onclick="show('r3',this)">Рис + рыба</button>
+</div>
+
+<!-- R1 -->
+<div id="r1" class="recipe active">
+  <div class="card">
+    <h2>Низ</h2>
+    <div>Рис + картошка</div>
+  </div>
+
+  <div class="card">
+    <h2>Верх</h2>
+    <div>Курица + рыба + котлеты</div>
+  </div>
+
+  <div class="card">
+    <div class="timer">20 мин — низ</div>
+    <div class="timer">+20 мин — верх</div>
+    <b>40 минут</b>
+  </div>
+</div>
+
+<!-- R2 -->
+<div id="r2" class="recipe">
+  <div class="card">
+    <h2>Низ</h2>
+    <div>Гречка + картошка</div>
+  </div>
+
+  <div class="card">
+    <h2>Верх</h2>
+    <div>Курица + рыба + котлеты</div>
+  </div>
+
+  <div class="card">
+    <div class="timer">15–20 мин</div>
+    <div class="timer">+20 мин</div>
+    <b>35–40 минут</b>
+  </div>
+</div>
+
+<!-- R3 -->
+<div id="r3" class="recipe">
+  <div class="card">
+    <h2>Низ</h2>
+    <div>Рис + картошка</div>
+  </div>
+
+  <div class="card">
+    <h2>Верх</h2>
+    <div>Рыба + котлеты</div>
+  </div>
+
+  <div class="card">
+    <div class="timer">20 мин</div>
+    <div class="timer">+15–20 мин</div>
+    <b>35–40 минут</b>
+  </div>
+</div>
+
+<script>
+function show(id,el){
+  document.querySelectorAll('.recipe').forEach(r=>r.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  el.classList.add('active');
+}
+
+// service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('sw.js');
+}
+</script>
+
+</body>
+</html>
