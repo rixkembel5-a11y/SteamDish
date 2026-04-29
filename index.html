@@ -36,7 +36,7 @@ select, button {
 .start { background:#22c55e; color:#000; }
 .next { background:#38bdf8; }
 .timer {
-  font-size:34px;
+  font-size:36px;
   text-align:center;
   margin:15px 0;
 }
@@ -49,7 +49,7 @@ select, button {
 <div class="header">🍲 Пароварка PRO</div>
 
 <div class="card">
-  <h2>Выбери рецепт</h2>
+  <h2>Выбор рецепта</h2>
   <select id="recipeSelect" onchange="loadRecipe()">
     <option value="r1">Рис + всё</option>
     <option value="r2">Гречка + всё</option>
@@ -58,93 +58,103 @@ select, button {
 </div>
 
 <div class="card">
-  <h2>Текущий шаг</h2>
-  <div id="stepText">Нажми «Старт»</div>
+  <h2>Шаг</h2>
+  <div id="stepText">Нажми старт</div>
 </div>
 
 <div class="timer" id="timer">00:00</div>
 
 <div style="text-align:center;">
   <button class="start" onclick="start()">Старт</button>
-  <button class="next" onclick="nextStep()">Следующий шаг</button>
+  <button class="next" onclick="nextStep()">Следующий</button>
 </div>
 
 <audio id="beep" src="https://actions.google.com/sounds/v1/alarms/beep_short.ogg"></audio>
 
 <script>
 
-// рецепты
 const recipes = {
   r1: [
-    { text: "НИЗ: рис + картошка", time: 20*60 },
-    { text: "ВЕРХ: курица, рыба, котлеты", time: 20*60 },
-    { text: "Готово 🎉", time: 0 }
+    { text: "НИЗ: рис + картошка", duration: 20*60*1000 },
+    { text: "ВЕРХ: курица, рыба, котлеты", duration: 20*60*1000 },
+    { text: "ГОТОВО 🎉", duration: 0 }
   ],
   r2: [
-    { text: "НИЗ: гречка + картошка", time: 15*60 },
-    { text: "ВЕРХ: курица, рыба, котлеты", time: 20*60 },
-    { text: "Готово 🎉", time: 0 }
+    { text: "НИЗ: гречка + картошка", duration: 15*60*1000 },
+    { text: "ВЕРХ: курица, рыба, котлеты", duration: 20*60*1000 },
+    { text: "ГОТОВО 🎉", duration: 0 }
   ],
   r3: [
-    { text: "НИЗ: рис + картошка", time: 20*60 },
-    { text: "ВЕРХ: рыба + котлеты", time: 15*60 },
-    { text: "Готово 🎉", time: 0 }
+    { text: "НИЗ: рис + картошка", duration: 20*60*1000 },
+    { text: "ВЕРХ: рыба + котлеты", duration: 15*60*1000 },
+    { text: "ГОТОВО 🎉", duration: 0 }
   ]
 };
 
-let steps = recipes["r1"];
+let steps = recipes.r1;
 let current = 0;
+let startTime = 0;
+let duration = 0;
 let interval = null;
 
-function loadRecipe(){
+function loadRecipe() {
   const val = document.getElementById("recipeSelect").value;
   steps = recipes[val];
   current = 0;
-  document.getElementById("stepText").innerText = "Нажми «Старт»";
+  document.getElementById("stepText").innerText = "Нажми старт";
   document.getElementById("timer").innerText = "00:00";
 }
 
-function start(){
+function start() {
   current = 0;
   runStep();
 }
 
-function nextStep(){
+function nextStep() {
   current++;
   runStep();
 }
 
-function runStep(){
+function runStep() {
   clearInterval(interval);
 
-  if(current >= steps.length) return;
+  if (current >= steps.length) return;
 
   const step = steps[current];
   document.getElementById("stepText").innerText = step.text;
 
-  let t = step.time;
+  duration = step.duration;
+  startTime = Date.now();
 
-  interval = setInterval(()=>{
-    let m = Math.floor(t/60);
-    let s = t%60;
+  if (duration === 0) {
+    document.getElementById("timer").innerText = "00:00";
+    return;
+  }
 
-    document.getElementById("timer").innerText =
-      String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
-
-    if(t <= 0){
-      clearInterval(interval);
-
-      // звук
-      const beep = document.getElementById("beep");
-      beep.play();
-
-      alert("Шаг завершён");
-    }
-    t--;
-  },1000);
+  interval = setInterval(updateTimer, 250);
 }
 
-// service worker
+function updateTimer() {
+  const elapsed = Date.now() - startTime;
+  let remaining = duration - elapsed;
+
+  if (remaining <= 0) {
+    clearInterval(interval);
+    document.getElementById("timer").innerText = "00:00";
+
+    document.getElementById("beep").play();
+    alert("Шаг завершён");
+    return;
+  }
+
+  let m = Math.floor(remaining / 60000);
+  let s = Math.floor((remaining % 60000) / 1000);
+
+  document.getElementById("timer").innerText =
+    String(m).padStart(2,'0') + ":" + String(s).padStart(2,'0');
+}
+
+// PWA service worker
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js');
 }
