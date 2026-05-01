@@ -1,4 +1,4 @@
-const CACHE = "steam-app-v1";
+const CACHE = "steam-app-v2";
 
 const FILES = [
   "./",
